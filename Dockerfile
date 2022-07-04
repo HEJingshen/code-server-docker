@@ -21,8 +21,28 @@ RUN apt-get update \
     sudo \
     vim.tiny \
     lsb-release \
+    gnupg \
   && git lfs install \
   && rm -rf /var/lib/apt/lists/*
+
+# add Azul's public key
+RUN apt-key adv \
+  --keyserver hkp://keyserver.ubuntu.com:80 \
+  --recv-keys 0xB1998361219BD9C9
+
+# download and install the package that adds 
+# the Azul APT repository to the list of sources 
+RUN curl -O https://cdn.azul.com/zulu/bin/zulu-repo_1.0.0-3_all.deb && \
+  apt-get install -y ./zulu-repo_1.0.0-3_all.deb && \
+  rm zulu-repo_1.0.0-3_all.deb && \
+  apt-get update
+
+# install Azul Zulu JDK 17
+RUN apt-get install -y zulu17-jdk
+
+# install and configure python3
+RUN apt-get install -y python3 python3-pip && \
+  update-alternatives --install /usr/bin/python python /usr/bin/python3 1
 
 # https://wiki.debian.org/Locale#Manually
 RUN sed -i "s/# en_US.UTF-8/en_US.UTF-8/" /etc/locale.gen \
