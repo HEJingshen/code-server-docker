@@ -12,7 +12,7 @@ group "default" {
 target "code-server" {
     dockerfile = "./Dockerfile"
     tags = [
-        "docker.io/kingsonho/code-server:1.0.0",
+        "docker.io/kingsonho/code-server:latest",
         notequal("latest",VERSION) ? "docker.io/kingsonho/code-server:${VERSION}" : "",
     ]
     platforms = ["linux/amd64", "linux/arm64"]
