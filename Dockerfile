@@ -22,6 +22,8 @@ RUN apt-get update \
     vim.tiny \
     lsb-release \
     gnupg \
+    wget \
+    software-properties-common \
   && git lfs install \
   && rm -rf /var/lib/apt/lists/*
 
@@ -37,12 +39,12 @@ RUN apt-get install -y python3 python3-pip && \
 # Go
 ENV GO_VERSION=1.18.3 \
     GOOS=linux \
-    GOARCH="$(dpkg --print-architecture)" \
     GOROOT=/usr/local/go \
     GOPATH=/usr/local/go-packages
 ENV PATH=$GOROOT/bin:$GOPATH/bin:$PATH
 
-RUN curl -fsSL https://storage.googleapis.com/golang/go$GO_VERSION.$GOOS-$GOARCH.tar.gz | tar -C /usr/local -xzv
+RUN GOARCH="$(dpkg --print-architecture)" && \
+    curl -fsSL https://go.dev/dl/go$GO_VERSION.$GOOS-$GOARCH.tar.gz | tar -C /usr/local -xzv
 
 ENV PATH=$PATH:$GOPATH/bin
 
