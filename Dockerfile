@@ -25,24 +25,39 @@ RUN apt-get update \
   && git lfs install \
   && rm -rf /var/lib/apt/lists/*
 
-# add Azul's public key
-RUN apt-key adv \
-  --keyserver hkp://keyserver.ubuntu.com:80 \
-  --recv-keys 0xB1998361219BD9C9
+# Developer tools
 
-# download and install the package that adds 
-# the Azul APT repository to the list of sources 
-RUN curl -O https://cdn.azul.com/zulu/bin/zulu-repo_1.0.0-3_all.deb && \
-  apt-get install -y ./zulu-repo_1.0.0-3_all.deb && \
-  rm zulu-repo_1.0.0-3_all.deb && \
-  apt-get update
+# Java
+RUN apt-get update && apt-get -y install openjdk-11-jdk maven gradle
 
-# install Azul Zulu JDK 17
-RUN apt-get install -y zulu17-jdk
-
-# install and configure python3
+# Python
 RUN apt-get install -y python3 python3-pip && \
   update-alternatives --install /usr/bin/python python /usr/bin/python3 1
+
+# Go
+ENV GO_VERSION=1.18.3 \
+    GOOS=linux \
+    GOARCH="$(dpkg --print-architecture)" \
+    GOROOT=/usr/local/go \
+    GOPATH=/usr/local/go-packages
+ENV PATH=$GOROOT/bin:$GOPATH/bin:$PATH
+
+RUN curl -fsSL https://storage.googleapis.com/golang/go$GO_VERSION.$GOOS-$GOARCH.tar.gz | tar -C /usr/local -xzv
+
+ENV PATH=$PATH:$GOPATH/bin
+
+# CMake
+ARG CMAKE_VERSION=3.23.2
+
+RUN CMakeARCH="$(uname -m)" && \
+    wget "https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-linux-$CMakeARCH.sh" && \
+    chmod a+x cmake-$CMAKE_VERSION-linux-$CMakeARCH.sh && \
+    ./cmake-$CMAKE_VERSION-linux-$CMakeARCH.sh --prefix=/usr/ --skip-license && \
+    rm cmake-$CMAKE_VERSION-linux-$CMakeARCH.sh
+
+# C/C++
+# public LLVM PPA, stable version of LLVM
+RUN bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
 
 # https://wiki.debian.org/Locale#Manually
 RUN sed -i "s/# en_US.UTF-8/en_US.UTF-8/" /etc/locale.gen \
